@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from src.data import db_handler
 from src.core import auth 
+from src.core import brain
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_banco_sol"
@@ -9,7 +10,7 @@ app.secret_key = "clave_secreta_banco_sol"
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        usuario_input = request.form['usuario'] # El usuario debe poner la Cédula (Ej: V-12345)
+        usuario_input = request.form['usuario_login'] #Aqui se recibe el usuario
         clave_input = request.form['clave']
 
         datos_usuario = db_handler.buscar_usuario(usuario_input)
@@ -17,19 +18,20 @@ def login():
         if datos_usuario:
             clave_real = db_handler.obtener_clave(usuario_input)
             if clave_input == clave_real:
-                return redirect(url_for('dashboard', nombre=datos_usuario[0]))
+                return redirect(url_for('dashboard', nombre=datos_usuario[1]))
             else:
                 flash("Contraseña incorrecta")
         else:
-            flash("Usuario no encontrado (Recuerda usar tu Cédula completa Ej: V-12345678, E-123456789, J-1234567890)")
+            flash("Usuario no encontrado. Revisa tu nombre de usuario.")
 
     return render_template('login.html')
 
-# 2. RUTA REGISTRO (NUEVA)
+# 2. RUTA REGISTRO 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
         # Capturamos datos del formulario web
+        usuario = request.form['usuario']
         nombre = request.form['nombre']
         tipo = request.form['tipo']
         cedula_num = request.form['cedula']
@@ -68,18 +70,30 @@ def registro():
             return redirect(url_for('registro'))
 
         # 4. Aqui se guarda en la base de datos
-        if db_handler.registrar_usuario(nombre, documento_final, tipo, telefono, email, clave):
-            flash("¡Registro exitoso! Ahora inicia sesión.")
+        if db_handler.registrar_usuario(usuario, nombre, documento_final, tipo, telefono, email, clave):
+            flash("¡Registro exitoso! Ahora inicia sesión con tu USUARIO.")
             return redirect(url_for('login'))
         else:
-            flash("Error: Esa cédula ya está registrada.")
+            flash("Error: Esa Usuario ya está registrada.")
 
     return render_template('registro.html')
 
 # 3. RUTA DASHBOARD
 @app.route('/dashboard/<nombre>')
 def dashboard(nombre):
-    return f"<h1>¡Bienvenido a tu Banco, {nombre}! </h1><p>Sistema Web Activo.</p>"
+    return render_template('chat.html', nombre = nombre)
+
+#Puente entre el HTML Y BRAIN.PY
+@app.route('/api/chat', methods=['POST'])
+
+def chat_api():
+    data = request.get_json()
+    mensaje = data.get('mensaje')
+    usuario = data.get('usuario')
+
+
+    respuesta = brain.procesar_mensaje(usuario, mensaje)
+    return jsonify({'respuesta': respuesta})
 
 if __name__ == '__main__':
     db_handler.inicializar_db() 

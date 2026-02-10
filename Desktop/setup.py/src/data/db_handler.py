@@ -8,10 +8,11 @@ def inicializar_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # IMPORTANTE: Aquí se define la estructura de la tabla
+    #Aquí se define la estructura de la tabla
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT UNIQUE NOT NULL,
             nombre TEXT NOT NULL,
             documento TEXT UNIQUE NOT NULL,
             tipo_doc TEXT NOT NULL,
@@ -23,64 +24,65 @@ def inicializar_db():
     conn.commit()
     conn.close()
 
-def registrar_usuario(nombre, documento, tipo, telefono, email, clave):
+def registrar_usuario(usuario, nombre, documento, tipo_doc, telefono, email, clave):
     """Guarda un nuevo usuario con TODOS sus datos de contacto"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
         
         cursor.execute(
-            "INSERT INTO usuarios (nombre, documento, tipo_doc, telefono, email, clave) VALUES (?, ?, ?, ?, ?, ?)", 
-            (nombre, documento, tipo, telefono, email, clave)
+            "INSERT INTO usuarios (usuario, nombre, documento, tipo_doc, telefono, email, clave) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+            (usuario, nombre, documento, tipo_doc, telefono, email, clave)
         )
         conn.commit()
         return True
     except sqlite3.IntegrityError:
-        return False
+        return False #Esto quiere decir que el usuario o el documento ya existen
     finally:
         conn.close()
 
-def buscar_usuario(documento):
-    """Busca un usuario y devuelve sus datos"""
+def buscar_usuario(usuario_input):
+    """Busca un usuario por su nombre de usuario y devuelve sus datos"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    cursor.execute("SELECT nombre, documento, telefono, email FROM usuarios WHERE documento = ?", (documento,))
-    usuario = cursor.fetchone()
+    cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (usuario_input,))
+    resultado = cursor.fetchone()
     
     conn.close()
-    return usuario 
+    return resultado 
 
-def obtener_clave(documento):
+def obtener_clave(usuario_input):
+    #Aqui obtiene la clave buscando por el nombre de usuario
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT clave FROM usuarios WHERE documento = ?", (documento,))
+    cursor.execute("SELECT clave FROM usuarios WHERE usuario = ?", (usuario_input,))
     resultado = cursor.fetchone()
     conn.close()
     if resultado:
         return resultado [0] #Devuelve solo el texto de la clave
     return None
 
-def actualizar_contacto(documento, nuevo_telefono=None, nuevo_email=None):
+def actualizar_contacto(usuario_input, nuevo_telefono=None, nuevo_email=None):
     """Permite editar contacto"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
     if nuevo_telefono:
-        cursor.execute("UPDATE usuarios SET telefono = ? WHERE documento = ?", (nuevo_telefono, documento))
+        cursor.execute("UPDATE usuarios SET telefono = ? WHERE usuario = ?", (nuevo_telefono, usuario_input))
     
     if nuevo_email:
-        cursor.execute("UPDATE usuarios SET email = ? WHERE documento = ?", (nuevo_email, documento))
+        cursor.execute("UPDATE usuarios SET email = ? WHERE usuario = ?", (nuevo_email, usuario_input))
         
     conn.commit()
     conn.close()
     return True
 
-def actualizar_clave(documento, nueva_clave):
-    #Actualiza la clave del usuario
+def actualizar_clave(usuario_input, nueva_clave):
+    #Actualiza la clave del usuario buscando por su nombre de usuario
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("UPDATE usuarios SET clave = ? WHERE documento = ?", (nueva_clave, documento))
+    cursor.execute("UPDATE usuarios SET clave = ? WHERE usuario = ?", (nueva_clave, usuario_input))
     conn.commit()
     conn.close()
     return True

@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="card">
-        <h1>📝 Nuevo Cliente</h1>
+        <h1>📝 Nuevo Usuario</h1>
         
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -27,7 +27,9 @@
         {% endwith %}
 
         <form action="/registro" method="POST">
-            <input type="text" name="nombre" placeholder="Nombre Completo" required>
+            <input type="text" name="usuario" placeholder="Crea tu Usuario (Ej: wilmer123)" required>
+            
+            <input type="text" name="nombre" placeholder="Nombre Completo Real" required>
             
             <div style="display: flex; gap: 5px; justify-content: center; width: 96%; margin: 0 auto;">
                 <select name="tipo" style="width: 30%;">
@@ -40,7 +42,7 @@
 
             <input type="text" name="telefono" placeholder="Teléfono (0412...)" required>
             <input type="email" name="email" placeholder="Correo Electrónico" required>
-            <input type="password" name="clave" placeholder="Crea tu Clave (min 6 caracteres)" required>
+            <input type="password" name="clave" placeholder="Crea tu Clave (min 4 caracteres)" required>
             
             <button type="submit">Registrarme</button>
         </form>

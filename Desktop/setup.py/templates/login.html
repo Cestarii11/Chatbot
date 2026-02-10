@@ -2,14 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Banco Sol - Acceso</title>
+    <title>Chat Sol - Acceso</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: black; margin: 0; }
-        .login-card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 300px; }
-        h1 { color: #d35400; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background-color: #d35400; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #e67e22; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: black; margin: 0; }
+        
+        /* TARJETA DE LOGIN */
+        .login-card { background: rgb(169, 159, 159); padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        h1 { color: #d35400; margin-bottom: 5px; }
+        h3 { color: #555; font-weight: normal; margin-top: 0; }
+        
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background-color: #fafafa; }
+        input:focus { border-color: #d35400; outline: none; background-color: #fff; }
+        
+        button.btn-login { width: 100%; padding: 12px; background-color: #d35400; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        button.btn-login:hover { background-color: #e67e22; transform: translateY(-2px); }
+
+        .help-text { font-size: 0.85em; color: #777; margin-top: 15px; }
+        .register-link { margin-top: 20px; display: block; color: #333; text-decoration: none; font-size: 0.9em; }
+        .register-link b { color: #d35400; }
+
+        /* --- BOTÓN FLOTANTE DEL CHAT (SOL) --- */
+        .fab-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 60px; height: 60px;
+            background-color: #d35400; color: white;
+            border-radius: 50%; border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer; font-size: 30px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .fab-btn:hover { transform: scale(1.1); background-color: #e67e22; }
+
+        /* --- VENTANA DE CHAT FLOTANTE --- */
+        .chat-widget {
+            display: none; /* Oculto por defecto */
+            position: fixed; bottom: 90px; right: 20px;
+            width: 300px; height: 400px;
+            background-color: #1e1e1e; color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .chat-header { background-color: #d35400; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .close-chat { cursor: pointer; font-size: 20px; }
+        
+        .chat-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; }
+        
+        .msg-sol { align-self: flex-start; background-color: #333; padding: 8px 12px; border-radius: 15px 15px 15px 0; max-width: 80%; }
+        .msg-user { align-self: flex-end; background-color: #e67e22; padding: 8px 12px; border-radius: 15px 15px 0 15px; max-width: 80%; }
+
+        .chat-footer { padding: 10px; border-top: 1px solid #333; display: flex; }
+        .chat-input { flex: 1; padding: 8px; border-radius: 20px; border: none; outline: none; font-size: 0.9em; }
+        .send-btn { background: none; border: none; cursor: pointer; margin-left: 5px; font-size: 1.2em; }
     </style>
 </head>
 <body>
@@ -18,7 +67,7 @@
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <p style="color: red; font-weight: bold;">{{ message }}</p>
+                    <p style="color: red; font-weight: bold; font-size: 0.9em;">{{ message }}</p>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -27,17 +76,71 @@
         <h3>Bienvenido</h3>
         
         <form action="/" method="POST">
-            <input type="text" name="usuario" placeholder="Cédula" required>
+            <input type="text" name="usuario_login" placeholder="Nombre de Usuario" required>
             <input type="password" name="clave" placeholder="Contraseña" required>
-            <button type="submit">Ingresar</button>
+            
+            <button type="submit" class="btn-login">Ingresar</button>
+            
+            <p class="help-text">
+                ¿Olvidaste tu usuario o clave?<br>
+                Habla con <b>Sol</b> aquí abajo ↘️
+            </p>
         </form>
 
-        <br><br>
-        <a href="/registro" style="color: #555; text-decoration: none;">
+        <a href="/registro" class="register-link">
             ¿No tienes cuenta? <b>Regístrate aquí</b>
         </a>
-
     </div>
 
+    <button class="fab-btn" onclick="toggleChat()">☀️</button>
+
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <span>Soporte Sol</span>
+            <span class="close-chat" onclick="toggleChat()">✖</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="msg-sol">¡Hola! Soy Sol. 👋 <br>Si olvidaste tu clave, dime tu cédula y te ayudaré.</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Escribe aquí..." onkeypress="handleEnter(event)">
+            <button class="send-btn" onclick="sendGuestMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            var widget = document.getElementById("chatWidget");
+            if (widget.style.display === "flex") {
+                widget.style.display = "none";
+            } else {
+                widget.style.display = "flex";
+            }
+        }
+
+        function handleEnter(e) {
+            if (e.key === "Enter") sendGuestMessage();
+        }
+
+        function sendGuestMessage() {
+            var input = document.getElementById("chatInput");
+            var text = input.value;
+            var body = document.getElementById("chatBody");
+
+            if (text.trim() === "") return;
+
+            // 1. Poner mensaje del usuario
+            body.innerHTML += `<div class="msg-user">${text}</div>`;
+            input.value = "";
+            body.scrollTop = body.scrollHeight;
+
+            // 2. Simular respuesta automática (Por ahora, es visual)
+            setTimeout(() => {
+                body.innerHTML += `<div class="msg-sol">Entiendo. Por seguridad, por favor contacta a soporte técnico al 0800-SOL-AYUDA o intenta recordar tu usuario. (Pronto podré restaurar tu clave automáticamente 🤖)</div>`;
+                body.scrollTop = body.scrollHeight;
+            }, 1000);
+        }
+    </script>
+
 </body>
-</html>>
+</html>
