@@ -46,13 +46,13 @@ def procesar_mensaje(usuario_nombre, mensaje_usuario):
         
     #Caso 4. Salida
      case "3" | "ayuda" | "chao" | "adios":
-            return "Hasta pronto! Escribe <b>'menu'<b/b> cuando quieras volver"
+            return "Hasta pronto! Escribe <b>'menu'</b> cuando quieras volver"
          
     #Caso 5: Comandos complejos (Usando GUARDS)
 
     #A. Olvide clave
 
-     case _ if "olvide clave" in msg or "olvide clave" in msg:
+     case _ if "olvide clave" in msg:
               return(
                    f"Tranquilo, <b>{usuario_nombre}</b>.<br>"
                    "Hemos verificado tu usuario correctamente.<br>"
@@ -71,11 +71,9 @@ def procesar_mensaje(usuario_nombre, mensaje_usuario):
                      valido, error = auth.validar_clave(clave_nueva)
                      if valido:
                         db_handler.actualizar_clave(usuario_nombre, clave_nueva)
-                        if valido:
-                            db_handler.actualizar_clave(usuario_nombre, clave_nueva)
-                            return f"✅ Éxito! Tu Clave ha sido actualizada correctamente."
-                        else:
-                            return f"La clave nueva no es segura: {error}"
+                        return f"✅ Éxito! Tu Clave ha sido actualizada correctamente."
+                     else:
+                        return f"La clave nueva no es segura: {error}"
                 else:
                     return "❌ Error: La clave actual es incorrecta"
             else:
