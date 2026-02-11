@@ -32,7 +32,6 @@ def procesar_mensaje(usuario_nombre, mensaje_usuario):
           return (
                 "<b>=== GESTIÓN DE CLAVES ===</b><br>"
                 "¿Qué deseas hacer?<br><br>"
-                "🔹 Escribe: <b>'Olvide clave'</b><br>"
                 "🔹 Escribe: <b>'Cambiar clave [actual] [nueva]"
             )
     #Caso 3. Menu de usuario   

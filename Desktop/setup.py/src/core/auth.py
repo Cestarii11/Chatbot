@@ -31,7 +31,7 @@ def validar_identificador(texto_input):
         
     else:
         if not (7 <= len(numero_doc) <= 8):
-            return False, None, None, "Error! la decula debe de tener entre 7 y 9 digitos"
+            return False, None, None, "Error! la cedula debe de tener entre 7 y 9 digitos"
             
     return True, tipo_detectado.replace("-", ""), numero_doc, "OK"
 
